@@ -1,9 +1,12 @@
+# %%-- Import
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as const
 import semiconductor
 # from scipy.optimize import fsolve
-#%% define functions
+# %%-
+
+#%%-- define functions
 # define the law of mass action
 def n_lawofmass(p, T):
     ni = 5.29e19*(T/300)**2.54*np.exp(-6726/T) # intrinsic carrier concentration of silicon at 300K cm-3
@@ -131,15 +134,15 @@ def SRHlifetimegenerator(Et_Ei, vn, vp, dn, Nt, sigman, sigmap, T, p0):
     [taop0, taon0] = taoptaon(sigmap, sigman, Nt, vp, vn)
     SRHtal = SRHlifetime(dn, p0, p1, n0, n1, taon0, taop0)
     return SRHtal
+# %%-
 
 
-#%% reproduce Yanpaper DPSS Figure 4.1 a
-# define the other parameters
+#%%-- define the parameters
 # set up the x axis
 dn = 1e15
 # print(dn)
 # set the given parameters
-Et_Ei = np.linspace(-0.33, 0.33) # eV
+Et_Ei = np.linspace(-0.365, 0.33) # eV
 me = 0.26*9.11e-31
 mp = 0.39*9.11e-31
 Nt = 1e12
@@ -153,7 +156,9 @@ realk = sigman/sigmap
 # define the parameters
 # p0 is the doping density
 p0 = 1e16 # cm-3
+# %%-
 
+#%%-- reproduce Yanpaper DPSS Figure 4.1 a
 # start plotting
 plt.figure()
 legendlist = []
@@ -257,25 +262,23 @@ plt.title('DPSStaop vs Et')
 plt.xlabel('Et relative to Ei (eV)')
 plt.ylabel('s')
 plt.show()
+# %%-
 
 # %%-- Plot the Et vs Lifetime.
 plt.figure()
-legendlist = []
-for temp in [300]:
-    # calculate the SRH densities
-    [n1, p1] = n1p1SRH2(Et_Ei, temp) # the temperature is assumed to be 300K
-    # calculate the intrinsic carrier concentration
-    n0 = n_lawofmass(p0, temp)
-    # calculate taun and taup
-    [taop0, taon0] = taoptaon(sigmap, sigman, Nt, vp, vn)
-    # calcualte the SRH lifetime
-    SRHtal = SRHlifetime(dn, p0, p1, n0, n1, taon0, taop0)
-    plt.plot(dn, SRHtal)
-    legendtext = 'T=' + str(temp) + 'K'
-    legendlist.append(legendtext)
-plt.yscale("log")
-plt.xscale("log")
-plt.xlabel('Excess Carrier Density cm-3')
-plt.ylabel('Carriers Lifetime(s)')
-plt.title('Et-Ei=' + str(Et_Ei))
+# calculate the SRH densities
+[n1, p1] = n1p1SRH2(Et_Ei, temp) # the temperature is assumed to be 300K
+# calculate the intrinsic carrier concentration
+n0 = n_lawofmass(p0, temp)
+# calculate taun and taup
+[taop0, taon0] = taoptaon(sigmap, sigman, Nt, vp, vn)
+# calcualte the SRH lifetime
+SRHtal = SRHlifetime(dn, p0, p1, n0, n1, taon0, taop0)
+SRHtal = np.log10(SRHtal)
+plt.plot(Et_Ei, SRHtal)
+plt.xlabel('$E_i$')
+plt.ylabel('Log of Carriers Lifetime(s)')
 plt.legend(legendlist)
+plt.title('log of Lifetime vs defect energy')
+plt.show()
+# %%-
