@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as const
 
-#%% define functions
+#%%-- define functions
 # define the law of mass action
 def n_lawofmass(p, T):
     ni = 5.29e19*(T/300)**2.54*np.exp(-6726/T) # intrinsic carrier concentration of silicon at 300K cm-3
@@ -130,8 +130,9 @@ def SRHlifetimegenerator(Et_Ei, vn, vp, dn, Nt, sigman, sigmap, T, p0):
     [taop0, taon0] = taoptaon(sigmap, sigman, Nt, vp, vn)
     SRHtal = SRHlifetime(dn, p0, p1, n0, n1, taon0, taop0)
     return SRHtal
+# %%-
 
-# define constants
+# %%--- define constants
 dn = np.logspace(12, 17, num = 100)
 # print(dn)
 # set the given parameters
@@ -149,8 +150,9 @@ realk = sigman/sigmap
 # define the parameters
 # p0 is the doping density
 p0 = 1e16 # cm-3
+# %%-
 
-# generate data for different temperature
+#%%--- generate data for different temperature
 SRHdatamatrix = []
 plt.figure()
 legendlist = []
@@ -177,5 +179,6 @@ plt.show()
 SRHdatamatrix = np.array(SRHdatamatrix)
 # print(np.shape(SRHdatamatrix))
 # now we have 3 columns of SRH
+# %%-
 
 # conduct the DPSS analysis for each temperature
