@@ -2,31 +2,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.constants as const
 import pandas as pd
+from sklearn.linear_model import LinearRegression
 
-class Linear_DPSS():
+class defect_DPSS():
     """
     this object will load the generated data from Yoann's code and do the Linear DPSS methods for the data
+    this object assumes that doping is unchanged, just the T is changing
     """
 
-    def __init__(self, path, doping_type='p', plotlifetime=False, row_index):
+    def __init__(self, path, doping_type='p', plotlifetime=False):
         """
         1. Load the data from the given path
+        2. self.doping is a numpy array of doping value corresponding to each lifetime data.
         """
         self.data = pd.read_csv(path)
         variable_type, temp_list, doping_level, excess_dn = self.temp_reader_heading() # gain informaiton about the defect by reading the headings
-        self.doping = doping_level
+        self.doping = np.array(list(np.char.split(doping_level, 'cm')))[:, 0].astype(np.float) # this line is to extract the number from the string (number + unit)
         self.plotlifetime = plotlifetime # a boolean input whether you wont to plot the lifetime data as a function of excess carrier concentration
         self.doping_type = doping_type
 
 
-    def data_extraction(self, row_index, plotlifetime=False):
+    def data_extraction(self, row_index=0):
         """
         Take the whole dataframe of defect:
         1. select the defect through row_index
         2. return the lifetime data for this defect under different temperature as a list of array
             lifetime_diff_T: is a list of array for lifetime data under different temprature.
             dn_diff_T: is a lsit of array for excess carrier concentration under different temperatures
-            T_unique: is a list of temperature corresponding to each array
+            T_unique: is a list of temperature corresponding to each array, is a string of values with units
         """
         plotlifetime = self.plotlifetime
         # extract the data for one defect:
@@ -57,7 +60,7 @@ class Linear_DPSS():
             plt.ylabel('lifetime (s)')
             plt.legend()
             plt.xscale('log')
-            plt.title('Lifetime data for a defect under different temperatures')
+            plt.title('Lifetime data for a defect')
             plt.show()
         return lifetime_diff_T, dn_diff_T, T_unique
 
@@ -91,20 +94,103 @@ class Linear_DPSS():
         return variable_type, temp_list, doping_level, excess_dn
 
 
-    def linear_fitting(self, defect_lifetimedata, plot_linear=False):
+    def linear_fitting(self, plot_linear=True):
         """
         fit the lifetime data for one single defect with linearized form
         if plot==True: then plot the linearized lifetime data
+        this function assumes that the doping is constant
         """
         # load data that is saperated by temperature:
-        lifetime_diff_T, dn_diff_T, T_unique = data_extraction(self, row_index)
+        lifetime_diff_T, dn_diff_T, T_unique = self.data_extraction()
+        # plot the lineralized SRH equation
         if plot_linear == True:
             plt.figure()
             for n in range(len(lifetime_diff_T)):
-                plt.plot(dn_diff_T[n], self.doping_level + lifetime_diff_T[n], label='T=' +str(T_unique[n]))
-            plt.xlabel('excess carrier concentration ($cm^{-3}$)')
+                # print(np.shape(dn_diff_T[n]))
+                # print(np.shape(self.doping[:len(dn_diff_T[n])]))
+                # print(np.shape(lifetime_diff_T[n]))
+                plt.plot((dn_diff_T[n])/(dn_diff_T[n] + self.doping[:len(dn_diff_T[n])]), lifetime_diff_T[n], label='T=' +str(T_unique[n]))
+            plt.xlabel('X=' + '$\dfrac{n}{p}$')
             plt.ylabel('lifetime (s)')
             plt.legend()
-            plt.xscale('log')
-            plt.title('Lifetime data for a defect under different temperatures')
+            # plt.xscale('log')
+            plt.title('Linear Lifetime data for a defect')
             plt.show()
+        # prepare empty list to collect the slopes and intercept:
+        slopelist = []
+        interceptlist = []
+        # find the thing using linear fitting for different temperatures:
+        for n in range(len(lifetime_diff_T)):
+            # define the x and y for fitting:
+            x_fitting = (dn_diff_T[n])/(dn_diff_T[n] + self.doping[:len(dn_diff_T[n])])
+            y_fitting = lifetime_diff_T[n]
+            # print(np.shape(x_fitting))
+            # print(np.shape(y_fitting))
+            # perform the linear fitting
+            linear_model = LinearRegression()
+            linear_model.fit(x_fitting.reshape(-1, 1), y_fitting)
+            intercept = linear_model.intercept_
+            interceptlist.append(intercept)
+            slope = linear_model.coef_
+            slopelist.append(slope)
+        return interceptlist, slopelist
+
+
+    def n1p1SRH(self, Et, T):
+        # ni the intrinnsic carrier concentration of silicon
+        ni = 5.29e19*(T/300)**2.54*np.exp(-6726/T)
+        # the bolzmans constant is always same
+        k = 8.617e-5 # boltzmans coonstant, unit is eV/K
+        # apply the equation:
+        n1 = ni*np.exp(Et/k/T)
+        p1 = ni*np.exp(-Et/k/T)
+        return n1, p1
+
+
+    def DPSSplot(self):
+        """
+        return the k value given the Et and slope and intercept of the linear fitted SHR equation
+        each Et will have a k corresponding to it
+        this function assumes that doping is unchanged
+        this function was assuming vp=vn=1, which is wrong, will figure out later
+        """
+        # load data that is saperated by temperature:
+        lifetime_diff_T, dn_diff_T, T_unique = self.data_extraction()
+        # obtain the list of slope and intercept for different temperature:
+        interceptlist, slopelist = self.linear_fitting()
+        klist_diffT = []
+        for n in range(len(slopelist)):
+            # simplify the symbol:
+            m = slopelist[n]
+            h = interceptlist[n]
+            # read the temperature of that lifetime data:
+            T = float(T_unique[n].split('K')[0])
+            # prepare an empty list to collect k and set up Et axis to swing on:
+            Etlist = np.linspace(-0.5, 0.5)
+            klist = []
+            # swing across different Et value:
+            for Et in Etlist:
+                # calculate the p1 and n1:
+                n1, p1 = self.n1p1SRH(Et, T)
+                # calculate the corresponding k based on the given equation:
+                taop0 = ((1 + p1/self.doping[0])*m + p1/self.doping[0]*h)/(1-n1/self.doping[0] + p1/self.doping[0])
+                taon0 = m + h - taop0
+                # find the thermal velocity:
+                vp = 1
+                vn = 1
+                k = taop0*vp/taon0/vn
+                # collect the calculated k
+                klist.append(k)
+            # now we have a list of Etlist and Eklist, collect the calculated k into a list of list for different temperature:
+            klist_diffT.append(klist)
+        # plot the Et vs k under different temperature:
+        plt.figure()
+        for k in klist_diffT:
+            # k here is a list
+            plt.plot(Etlist, k, label = 'T=' + str(T_unique[n]))
+        plt.yscale('log')
+        plt.xlabel('$E_t-E_i$(eV)')
+        plt.ylabel('k')
+        plt.legend()
+        plt.title('DPSS analysis plot')
+        plt.show()
