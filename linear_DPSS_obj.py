@@ -8,6 +8,11 @@ class defect_DPSS():
     """
     this object will load the generated data from Yoann's code and do the Linear DPSS methods for the data
     this object assumes that doping is unchanged, just the T is changing
+
+    to do:
+    1. fix the vp vn problem
+    2. make the code capable for n type material as well
+    3. make the code capable for different doping methods
     """
 
     def __init__(self, path, doping_type='p', plotlifetime=False):
