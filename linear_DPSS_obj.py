@@ -59,6 +59,8 @@ class defect_DPSS():
         # plot the data if required:
         if plotlifetime == True:
             plt.figure()
+            colormap = plt.cm.gist_ncar
+            plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(T_unique)))))
             for n in range(len(lifetime_diff_T)):
                 plt.plot(dn_diff_T[n], lifetime_diff_T[n], label='T=' +str(T_unique[n]))
             plt.xlabel('excess carrier concentration ($cm^{-3}$)')
@@ -110,6 +112,8 @@ class defect_DPSS():
         # plot the lineralized SRH equation
         if plot_linear == True:
             plt.figure()
+            colormap = plt.cm.gist_ncar
+            plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(T_unique)))))
             for n in range(len(lifetime_diff_T)):
                 # print(np.shape(dn_diff_T[n]))
                 # print(np.shape(self.doping[:len(dn_diff_T[n])]))
@@ -171,7 +175,7 @@ class defect_DPSS():
             # read the temperature of that lifetime data:
             T = float(T_unique[n].split('K')[0])
             # prepare an empty list to collect k and set up Et axis to swing on:
-            Etlist = np.linspace(-0.5, 0.5)
+            Etlist = np.linspace(-0.5, 0.21)
             klist = []
             # swing across different Et value:
             for Et in Etlist:
@@ -190,9 +194,14 @@ class defect_DPSS():
             klist_diffT.append(klist)
         # plot the Et vs k under different temperature:
         plt.figure()
+        # print(T_unique)
+        counter = 0
+        colormap = plt.cm.gist_ncar
+        plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(T_unique)))))
         for k in klist_diffT:
             # k here is a list
-            plt.plot(Etlist, k, label = 'T=' + str(T_unique[n]))
+            plt.plot(Etlist, k, label = 'T=' + str(T_unique[counter]))
+            counter = counter + 1
         plt.yscale('log')
         plt.xlabel('$E_t-E_i$(eV)')
         plt.ylabel('k')
