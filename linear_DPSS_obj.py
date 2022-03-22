@@ -168,6 +168,7 @@ class defect_DPSS():
         # obtain the list of slope and intercept for different temperature:
         interceptlist, slopelist = self.linear_fitting()
         klist_diffT = []
+        taup0list_diffT = []
         for n in range(len(slopelist)):
             # simplify the symbol:
             m = slopelist[n]
@@ -177,6 +178,7 @@ class defect_DPSS():
             # prepare an empty list to collect k and set up Et axis to swing on:
             Etlist = np.linspace(-0.5, 0.21)
             klist = []
+            taup0list = []
             # swing across different Et value:
             for Et in Etlist:
                 # calculate the p1 and n1:
@@ -190,8 +192,10 @@ class defect_DPSS():
                 k = taop0*vp/taon0/vn
                 # collect the calculated k
                 klist.append(k)
+                taup0list.append(taop0)
             # now we have a list of Etlist and Eklist, collect the calculated k into a list of list for different temperature:
             klist_diffT.append(klist)
+            taup0list_diffT.append(taup0list)
         # plot the Et vs k under different temperature:
         plt.figure()
         # print(T_unique)
@@ -205,6 +209,23 @@ class defect_DPSS():
         plt.yscale('log')
         plt.xlabel('$E_t-E_i$(eV)')
         plt.ylabel('k')
+        plt.legend()
+        plt.title('DPSS analysis plot')
+        plt.show()
+
+        # plot the Et vs tao under different temperature:
+        plt.figure()
+        # print(T_unique)
+        counter = 0
+        colormap = plt.cm.gist_ncar
+        plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(T_unique)))))
+        for tau in taup0list_diffT:
+            # k here is a list
+            plt.plot(Etlist, tau, label = 'T=' + str(T_unique[counter]))
+            counter = counter + 1
+        plt.yscale('log')
+        plt.xlabel('$E_t-E_i$(eV)')
+        plt.ylabel('$tau$')
         plt.legend()
         plt.title('DPSS analysis plot')
         plt.show()
