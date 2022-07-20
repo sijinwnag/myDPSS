@@ -35,6 +35,7 @@ class defect_DPSS():
             lifetime_diff_T: is a list of array for lifetime data under different temprature.
             dn_diff_T: is a lsit of array for excess carrier concentration under different temperatures
             T_unique: is a list of temperature corresponding to each array, is a string of values with units
+        3. This function also controls the colour so that it goes from red to blue
         """
         plotlifetime = self.plotlifetime
         # extract the data for one defect:
