@@ -59,16 +59,24 @@ class defect_DPSS():
         # now we have a list of list of lifetime data and each list containing the data with the same temperature.
         # plot the data if required:
         if plotlifetime == True:
-            plt.figure()
+            fig= plt.figure(facecolor='white', figsize=(5, 5))
+            # ax = fig.add_subplot(111)
+            # plt.set_size_inches(10.5, 10.5)
             colormap = plt.cm.gist_ncar
             plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(T_unique)))))
             for n in range(len(lifetime_diff_T)):
                 plt.plot(dn_diff_T[n], lifetime_diff_T[n], label='T=' +str(T_unique[n]))
-            plt.xlabel('excess carrier concentration ($cm^{-3}$)')
-            plt.ylabel('lifetime (s)')
-            plt.legend()
+            plt.xlabel('$\Delta n$ (cm$^{-3}$)', fontsize=20, fontname="Arial")
+            # plt.xlabel(r'Primary T$_{\rm eff}$')
+            plt.ylabel('$\u03C4$ (s)', fontsize=20, fontname="Arial")
+            # ax.set_aspect("equal")
+            # plt.text(0.9, 0.1, '(a)', fontsize=22, transform=ax.transAxes)
+            plt.xticks(fontsize=20, fontname="Arial")
+            plt.yticks(fontsize=20, fontname="Arial")
+            plt.legend(fontsize=15)
             plt.xscale('log')
-            plt.title('Lifetime data for a defect')
+            plt.savefig('Lifetime plot.png', bbox_inches='tight')
+            # plt.title('Lifetime data for a defect')
             plt.show()
         return lifetime_diff_T, dn_diff_T, T_unique
 
@@ -112,7 +120,8 @@ class defect_DPSS():
         lifetime_diff_T, dn_diff_T, T_unique = self.data_extraction()
         # plot the lineralized SRH equation
         if plot_linear == True:
-            plt.figure()
+            fig= plt.figure(facecolor='white', figsize=(5, 5))
+            # ax = fig.add_subplot(111)
             colormap = plt.cm.gist_ncar
             plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(T_unique)))))
             for n in range(len(lifetime_diff_T)):
@@ -120,11 +129,16 @@ class defect_DPSS():
                 # print(np.shape(self.doping[:len(dn_diff_T[n])]))
                 # print(np.shape(lifetime_diff_T[n]))
                 plt.plot((dn_diff_T[n])/(dn_diff_T[n] + self.doping[:len(dn_diff_T[n])]), lifetime_diff_T[n], label='T=' +str(T_unique[n]))
-            plt.xlabel('X=' + '$\dfrac{n}{p}$')
-            plt.ylabel('lifetime (s)')
-            plt.legend()
+            plt.xlabel('X=' + '$\dfrac{n}{p}$', fontsize=20, fontname="Arial")
+            plt.ylabel('$\u03C4$ (s)', fontsize=20, fontname="Arial")
+            plt.xticks(fontsize=20, fontname="Arial")
+            plt.yticks(fontsize=20, fontname="Arial")
+            plt.legend(fontsize=15)
+            # ax.set_aspect("equal")
+            # plt.text(0.9, 0.1, '(b)', fontsize=22, transform=ax.transAxes)
             # plt.xscale('log')
-            plt.title('Linear Lifetime data for a defect')
+            # plt.title('Linear Lifetime data for a defect')
+            plt.savefig('linear_lifetime.png', bbox_inches='tight')
             plt.show()
         # prepare empty list to collect the slopes and intercept:
         slopelist = []
@@ -198,7 +212,8 @@ class defect_DPSS():
             klist_diffT.append(klist)
             taup0list_diffT.append(taup0list)
         # plot the Et vs k under different temperature:
-        plt.figure()
+        fig= plt.figure(facecolor='white', figsize=(5, 5))
+        # ax = fig.add_subplot(111)
         # print(T_unique)
         counter = 0
         colormap = plt.cm.gist_ncar
@@ -208,25 +223,38 @@ class defect_DPSS():
             plt.plot(Etlist, k, label = 'T=' + str(T_unique[counter]))
             counter = counter + 1
         plt.yscale('log')
-        plt.xlabel('$E_t-E_i$(eV)')
-        plt.ylabel('k')
-        plt.legend()
-        plt.title('DPSS analysis plot')
+        plt.xlabel('$E_t-E_i$ (eV)', fontsize=20, fontname="Arial")
+        plt.ylabel('k', fontsize=20, fontname="Arial")
+        plt.legend(fontsize=15)
+        plt.xticks(ticks=[-0.5, -0.25, 0, 0.25, 0.5], fontsize=20, fontname="Arial")
+        plt.yticks(fontsize=20, fontname="Arial")
+        # ax.set_aspect("equal")
+        # plt.text(0.9, 0.1, '(c)', fontsize=22, transform=ax.transAxes)
+        plt.savefig('DPSS.png', bbox_inches='tight')
+        # plt.title('DPSS analysis plot')
         plt.show()
 
         # plot the Et vs tao under different temperature:
-        plt.figure()
+        # fig0 = plt.figure(facecolor='white', figsize=(5, 5))
+        # plt.figure(facecolor='white', figsize=(5, 5))
+        fig= plt.figure(facecolor='white', figsize=(5, 5))
+        # ax = fig.add_subplot(111)
         # print(T_unique)
         counter = 0
         colormap = plt.cm.gist_ncar
         plt.gca().set_prop_cycle(plt.cycler('color', plt.cm.jet(np.linspace(0, 1, len(T_unique)))))
         for tau in taup0list_diffT:
             # k here is a list
-            plt.plot(Etlist, tau, label = 'T=' + str(T_unique[counter]))
+            plt.plot(Etlist, tau, label = '' + str(T_unique[counter].split(' K')[0]))
             counter = counter + 1
         plt.yscale('log')
-        plt.xlabel('$E_t-E_i$(eV)')
-        plt.ylabel('$tau$')
-        plt.legend()
-        plt.title('DPSS analysis plot')
+        plt.xlabel(r'$E_{t}-E_{i}$ (eV)', fontsize=20, fontname="Arial")
+        plt.ylabel('$tau$', fontsize=20, fontname="Arial")
+        plt.legend(fontsize=15, title = r'T (K)', title_fontsize=15)
+        # bbx_to_anchor=(0.5, 1)
+        # ncol = 4
+        plt.tight_layout()
+        plt.subplots_adjust()
+
+        # plt.title('DPSS analysis plot')
         plt.show()
